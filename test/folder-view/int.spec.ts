@@ -113,4 +113,42 @@ describe('folders', () => {
       expect(parentFolderQuery.documentsAndFolders.docs).toHaveLength(2)
     })
   })
+
+  describe('hooks', () => {
+    it('reparentChildFolder should change the child after updating the parent', async () => {
+      const parentFolder = await payload.create({
+        collection: '_folders',
+        data: {
+          name: 'Parent Folder',
+        },
+      })
+
+      const childFolder = await payload.create({
+        collection: '_folders',
+        data: {
+          name: 'Parent Folder',
+          _folder: parentFolder,
+        },
+      })
+
+      await payload.update({
+        collection: '_folders',
+        data: { _folder: childFolder },
+        id: parentFolder.id,
+      })
+
+      const parentAfter = await payload.findByID({
+        collection: '_folders',
+        id: parentFolder.id,
+        depth: 0,
+      })
+      const childAfter = await payload.findByID({
+        collection: '_folders',
+        id: childFolder.id,
+        depth: 0,
+      })
+      expect(childAfter._folder).toBeFalsy()
+      expect(parentAfter._folder).toBe(childFolder.id)
+    })
+  })
 })
