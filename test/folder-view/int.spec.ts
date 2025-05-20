@@ -150,5 +150,20 @@ describe('folders', () => {
       expect(childAfter._folder).toBeFalsy()
       expect(parentAfter._folder).toBe(childFolder.id)
     })
+
+    it('dissasociateAfterDelete should delete _folder value in children after deleting the folder', async () => {
+      const parentFolder = await payload.create({
+        collection: '_folders',
+        data: {
+          name: 'Parent Folder',
+        },
+      })
+
+      const post = await payload.create({ collection: 'posts', data: { _folder: parentFolder } })
+
+      await payload.delete({ collection: '_folders', id: parentFolder.id })
+      const postAfter = await payload.findByID({ collection: 'posts', id: post.id })
+      expect(postAfter._folder).toBeFalsy()
+    })
   })
 })
