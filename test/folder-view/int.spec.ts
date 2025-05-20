@@ -126,7 +126,7 @@ describe('folders', () => {
       const childFolder = await payload.create({
         collection: '_folders',
         data: {
-          name: 'Parent Folder',
+          name: 'Child Folder',
           _folder: parentFolder,
         },
       })
@@ -164,6 +164,28 @@ describe('folders', () => {
       await payload.delete({ collection: '_folders', id: parentFolder.id })
       const postAfter = await payload.findByID({ collection: 'posts', id: post.id })
       expect(postAfter._folder).toBeFalsy()
+    })
+
+    it('deleteSubfoldersAfterDelete deletes subfolders after deleting the parent folder', async () => {
+      const parentFolder = await payload.create({
+        collection: '_folders',
+        data: {
+          name: 'Parent Folder',
+        },
+      })
+      const childFolder = await payload.create({
+        collection: '_folders',
+        data: {
+          name: 'Child Folder',
+          _folder: parentFolder,
+        },
+      })
+
+      await payload.delete({ collection: '_folders', id: parentFolder.id })
+
+      await expect(
+        payload.findByID({ collection: '_folders', id: childFolder.id, disableErrors: true }),
+      ).resolves.toBeNull()
     })
   })
 })
